@@ -1,0 +1,46 @@
+{
+	"authors": [
+		"Alireza |S.N|"
+	],
+	"configurations": [{
+			"name": "default",
+			"subConfigurations": {
+				"hibernated": "SQLite"
+			},
+			"targetType": "executable"
+		},
+		{
+			"buildOptions": [
+				"unittests"
+			],
+			"excludedSourceFiles": [
+				"source/app.d"
+			],
+			"name": "unittest",
+			"subConfigurations": {
+				"hibernated": "SQLite"
+			},
+			"targetType": "library"
+		}
+	],
+	"dependencies": {
+		"gtk-d:gtkd": "~>3.8.5",
+		"hibernated": "~>0.3.5",
+		"requests": "~>1.0.9"
+	},
+	"description": "A minimal D application.",
+	"libs": [
+		"vlc",
+		"gtk+-3.0"
+	],
+	"license": "GPL-3.0",
+	"name": "bingewatch",
+	"preBuildCommands": [
+		"glib-compile-resources res.xml --generate-source",
+		"gcc -g -O -c $$(pkg-config --cflags gtk+-3.0) res.c"
+	],
+	"sourceFiles": [
+		"res.o"
+	],
+	"targetType": "executable"
+}
