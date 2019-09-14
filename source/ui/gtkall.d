@@ -32,7 +32,7 @@ public {
     import gtk.InfoBar;
     import gdk.Threads;
     import gtk.ScrolledWindow, gtk.FlowBox, gtk.FlowBoxChild;
-    import gdk.Pixbuf;
+    import gdk.Pixbuf, gdk.Color;
     import gdk.Window : GdkWin = Window;
 
     import cairo.Context, gdk.RGBA;

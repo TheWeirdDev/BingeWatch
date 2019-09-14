@@ -129,7 +129,7 @@ public:
         if (infoTimeout !is null) {
             infoTimeout.stop();
         }
-        infoTimeout = new Timeout(() { infobar.setRevealed(false); return false; }, 5, false);
+        infoTimeout = new Timeout({ infobar.setRevealed(false); return false; }, 5, false);
     }
 
     void reloadLibary() {

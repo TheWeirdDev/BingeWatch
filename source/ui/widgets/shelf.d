@@ -26,11 +26,9 @@ public:
         setMargin(this, 10);
         // for (int i = 0; i < 100; i++)
         foreach (ref tv; lib.getShows()) {
-            //auto ch = new FlowBoxChild();
-            auto btn = new ShelfItem(tv);
+            auto btn = new ShelfItemTVShow(tv);
             btn.setSizeRequest(Width, Height);
             add(btn);
-            //add(ch);
         }
     }
 
@@ -40,28 +38,35 @@ public:
     }
 }
 
-private class ShelfItem : FlowBoxChild {
-private:
-    union {
-        TVShow show;
-        Movie movie;
+private class BaseShelfItem(T) : FlowBoxChild {
+protected:
+    T data;
+
+    this(T t) {
+        super();
+        data = t;
     }
 
-    enum Tag {
-        TVSHOW,
-        MOVIE
+    T getData() {
+        return data;
     }
+}
 
-    Tag tag;
+private class ShelfItemTVShow : BaseShelfItem!(TVShow) {
 
 public:
     this(TVShow tvs) {
+        super(tvs);
+
         auto box = new Box(GtkOrientation.VERTICAL, 5);
         auto btn = new Button();
         btn.setVexpand(true);
         btn.setHexpand(true);
-        // btn.setRelief(GtkReliefStyle.HALF);
+        box.setHexpand(true);
+        btn.setHalign(GtkAlign.CENTER);
+
         setSizeRequest(Width, Height);
+        btn.setSizeRequest(Width, Height);
 
         box.addOnDraw((Scoped!Context c, Widget w) {
             Pixbuf p = new Pixbuf("/home/alireza/Downloads/desSj4kx0y9p61vm9QBE3Wm8GxK.jpg",
@@ -80,12 +85,8 @@ public:
         box.packEnd(lblName, false, true, 0);
         //box.add(new Label(tvs.year.to!string));
         btn.add(box);
+        btn.setRelief(GtkReliefStyle.NORMAL);
         add(btn);
-        show = tvs;
-        tag = Tag.TVSHOW;
     }
 
-    this(Movie m) {
-
-    }
 }
