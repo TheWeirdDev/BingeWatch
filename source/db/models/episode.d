@@ -8,9 +8,9 @@ class Episode {
     @Generated @Id long id;
     string name;
     string dir_path;
-    string description;
-    double rating;
-    string picture_path;
+    string description = "";
+    double rating = 0;
+    string picture_path = "";
     long num = 0;
     long season = 0;
     long watched = 0;

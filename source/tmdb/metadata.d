@@ -5,6 +5,7 @@ import std.stdio;
 import std.file, std.regex, std.conv;
 import std.algorithm, std.range;
 import std.json;
+import std.format;
 
 import db.models;
 import db.database;
@@ -51,25 +52,35 @@ public:
             tvs.dir_path = tv.dir_path;
 
             foreach (s; seasonsAndEpisodes.keys.sort.uniq) {
-                JSONValue season = TMDB.getSeason(tv.tmdb_id, s);
+                //TODO: Download images
+                JSONValue season = TMDB.getSeason(tvs.tmdb_id, s);
                 auto eps = season["episodes"].array;
                 foreach (ref ep; seasonsAndEpisodes[s]) {
                     auto fil = tv.episodes.filter!(e => e.dir_path == ep.dir_path);
                     if (fil.empty) {
+                        ep.name = format("%s S%dE%d", tv.name, ep.season, ep.num);
                         ds.addItem(ep);
                     } else {
                         ep.id = fil.array[0].id;
                         ep.watched = fil.array[0].watched;
-                        ds.updateItem(ep);
+                    }
+                    auto fil2 = eps.filter!(e => e["episode_number"].integer == ep.num);
+                    if (!fil2.empty) {
+                        auto jsonEp = fil2.array[0];
+                        ep.name = jsonEp["overview"].str;
+                        ep.description = jsonEp["overview"].str;
+                        ep.rating = jsonEp["vote_average"].floating;
+                        ep.picture_path = jsonEp["still_path"].str;
                     }
                     ep.tvshow = tv;
-
+                    ds.updateItem(ep);
                 }
             }
 
             cb(tvs, null);
-        } catch (Exception e) {
-            cb(null, e);
+        } catch (Throwable e) {
+            e.writeln;
+            // cb(null, e);
         }
     }
 }

@@ -122,14 +122,20 @@ public:
 
     }
 
-    void showMessage(string text, GtkMessageType msgType = GtkMessageType.INFO) {
+    void showError(string text, bool autoClose = true) {
+        showMessage(text, autoClose, GtkMessageType.ERROR);
+    }
+
+    void showMessage(string text, bool autoClose = true, GtkMessageType msgType = GtkMessageType
+            .INFO) {
         message.setText(text);
         infobar.setMessageType(msgType);
         infobar.setRevealed(true);
         if (infoTimeout !is null) {
             infoTimeout.stop();
         }
-        infoTimeout = new Timeout({ infobar.setRevealed(false); return false; }, 5, false);
+        if (autoClose)
+            infoTimeout = new Timeout({ infobar.setRevealed(false); return false; }, 5, false);
     }
 
     void reloadLibary() {
@@ -176,11 +182,11 @@ public:
         }
         //TODO: Check if this show already exists
         auto tvs = lib.addTVShow(name, dir);
-        showMessage("Downloading metadata");
+        showMessage("Downloading metadata", false);
 
         loadMetadataFor(tvs, (TVShow tv, Exception e) {
             if (e !is null) {
-                showMessage("Error: " ~ e.msg, GtkMessageType.ERROR);
+                showError("Error: " ~ e.msg);
                 return;
             }
             lib.update(tv);
