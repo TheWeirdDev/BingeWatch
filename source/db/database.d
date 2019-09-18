@@ -18,7 +18,7 @@ private:
     static bool instantiated_;
     __gshared Database instance_;
 
-package:
+public:
     static Database getInstance() {
         if (!instantiated_) {
             synchronized (Database.classinfo) {
@@ -69,15 +69,15 @@ package:
     }
 
     void updateItem(Object o) {
-        // synchronized (Database.classinfo) {
-        sess.update(o);
-        // }
+        synchronized (Database.classinfo) {
+            sess.update(o);
+        }
     }
 
     void addItem(Object o) {
-        //    synchronized (Database.classinfo) {
-        sess.save(o);
-        //   }
+        synchronized (Database.classinfo) {
+            sess.save(o);
+        }
     }
 
 }

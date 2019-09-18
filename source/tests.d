@@ -115,4 +115,5 @@ unittest {
     assert(ppd.name == "Paradise PD");
     writeln(ppd.genres);
 
+    auto a = TMDB.getSeason(1668, 2);
 }

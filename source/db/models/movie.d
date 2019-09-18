@@ -18,4 +18,5 @@ class Movie {
 	string age_rating;
 	float rating;
 	long length;
+	long watched;
 }

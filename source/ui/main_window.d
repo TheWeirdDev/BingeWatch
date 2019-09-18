@@ -166,24 +166,23 @@ public:
     void importTVShow() {
         auto name = "";
         debug {
-            auto dir = "/path/to/PPD";
-            name = "Paradise PD";
+            auto dir = "/run/media/alireza/Movies/Khareji/Serial/Friends/";
+            name = "Friends";
         } else {
             auto dir = selectTVShowDir(name);
         }
         if (dir == "" || name == "") {
             return;
         }
+        //TODO: Check if this show already exists
         auto tvs = lib.addTVShow(name, dir);
         showMessage("Downloading metadata");
 
-        loadMetadataFor(name, (TVShow tv, Exception e) {
+        loadMetadataFor(tvs, (TVShow tv, Exception e) {
             if (e !is null) {
                 showMessage("Error: " ~ e.msg, GtkMessageType.ERROR);
                 return;
             }
-            tv.id = tvs.id;
-            tv.dir_path = dir;
             lib.update(tv);
             reloadLibary();
             showMessage("Done");

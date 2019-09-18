@@ -13,15 +13,17 @@ import config;
 
 class TMDB {
 private:
-    static string apiKey;
+    static immutable(string) apiKey;
     static pragma(inline, true) string makeUrl(string s, string query = "") {
         enum apiUrl = "https://api.themoviedb.org/3/%s?%sapi_key=%s&language=en-US";
         return format!apiUrl(s, query, apiKey);
     }
 
 public:
-    static this() {
+    shared static this() {
         apiKey = API_KEY;
+        if (apiKey != "")
+            return;
         debug apiKey = environment.get("API_KEY", "");
         enforce(apiKey != "", "No api key specified");
     }
@@ -59,9 +61,15 @@ static:
         auto content = getRequest(url);
         auto resp = parseJSON(content);
         if (resp["total_results"].integer == 0) {
-            return -1;
+            throw new Exception("No metadata found for '" ~ name ~ "'");
         }
         return cast(ulong) resp["results"].array[0]["id"].integer;
+    }
+
+    auto getSeason(ulong id, long snum) {
+        auto url = makeUrl(format!"tv/%d/season/%d"(id, snum));
+        auto content = getRequest(url);
+        return parseJSON(content);
     }
 
     TVShow getTVShow(in ulong id) {
@@ -69,30 +77,34 @@ static:
         auto content = getRequest(url);
         auto resp = parseJSON(content);
         auto tvs = new TVShow;
-        tvs.name = resp["name"].str;
-        tvs.tmdb_id = resp["id"].integer;
-        tvs.description = resp["overview"].str;
-        tvs.rating = resp["vote_average"].floating;
-        auto t = resp["episode_run_time"].array;
-        if (t.length > 0)
-            tvs.episode_length = t[0].integer;
+        try {
+            tvs.name = resp["name"].str;
+            tvs.tmdb_id = resp["id"].integer;
+            tvs.description = resp["overview"].str;
+            tvs.rating = resp["vote_average"].floating;
+            auto t = resp["episode_run_time"].array;
+            if (t.length > 0)
+                tvs.episode_length = t[0].integer;
 
-        tvs.genres = resp["genres"].array
-            .map!((item) { return item["name"].str; })
-            .to!string;
+            tvs.genres = resp["genres"].array
+                .map!((item) { return item["name"].str; })
+                .to!string;
 
-        tvs.creators = resp["created_by"].array
-            .map!((item) { return item["name"].str; })
-            .to!string;
-        tvs.rating = resp["vote_average"].floating;
+            tvs.creators = resp["created_by"].array
+                .map!((item) { return item["name"].str; })
+                .to!string;
+            tvs.rating = resp["vote_average"].floating;
 
-        auto fad = resp["first_air_date"].str;
-        tvs.year = fad[0 .. fad.indexOf("-")].to!int;
+            auto fad = resp["first_air_date"].str;
+            tvs.year = fad[0 .. fad.indexOf("-")].to!int;
 
-        tvs.cover_picture = resp["backdrop_path"].str;
-        tvs.picture = resp["poster_path"].str;
-        tvs.episode_count = resp["number_of_episodes"].integer;
-        tvs.season_count = resp["number_of_seasons"].integer;
+            tvs.cover_picture = resp["backdrop_path"].str;
+            tvs.picture = resp["poster_path"].str;
+            tvs.episode_count = resp["number_of_episodes"].integer;
+            tvs.season_count = resp["number_of_seasons"].integer;
+        } catch (Exception e) {
+            throw new Exception("Failed to load matadata: " ~ e.msg);
+        }
         return tvs;
     }
 
