@@ -2,6 +2,7 @@ module ui.widgets.shelf;
 
 import std.conv;
 
+import utils.util;
 import ui.gtkall;
 import db.models;
 import db.library;
@@ -69,7 +70,7 @@ public:
         btn.setSizeRequest(Width, Height);
 
         box.addOnDraw((Scoped!Context c, Widget w) {
-            Pixbuf p = new Pixbuf("/home/alireza/Downloads/desSj4kx0y9p61vm9QBE3Wm8GxK.jpg",
+            Pixbuf p = new Pixbuf(getImagesDirName() ~ tvs.picture,
                 w.getAllocatedWidth(), w.getAllocatedHeight(), false);
             c.setSourcePixbuf(p, 0, 0);
             c.rectangle(0, 0, w.getAllocatedWidth(), w.getAllocatedHeight());

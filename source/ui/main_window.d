@@ -170,6 +170,7 @@ public:
     }
 
     void importTVShow() {
+        //TODO: Check if download is in progress
         auto name = "";
         debug {
             auto dir = "/run/media/alireza/Movies/Khareji/Serial/Friends/";
@@ -182,7 +183,7 @@ public:
         }
         //TODO: Check if this show already exists
         auto tvs = lib.addTVShow(name, dir);
-        showMessage("Downloading metadata", false);
+        showMessage("Downloading metadata. This takes a while, please wait.", false);
 
         loadMetadataFor(tvs, (TVShow tv, Exception e) {
             if (e !is null) {

@@ -68,6 +68,16 @@ public:
         return sess.createQuery("FROM TVShow ORDER BY " ~ order).list!TVShow();
     }
 
+    TVShow getShow(string name) {
+        return sess.createQuery("FROM TVShow WHERE name=:Name")
+            .setParameter("Name", name).uniqueResult!TVShow();
+    }
+
+    TVShow getShow(long id) {
+        return sess.createQuery("FROM TVShow WHERE id=:Id").setParameter("Id",
+                id).uniqueResult!TVShow();
+    }
+
     void updateItem(Object o) {
         synchronized (Database.classinfo) {
             sess.update(o);
@@ -77,6 +87,12 @@ public:
     void addItem(Object o) {
         synchronized (Database.classinfo) {
             sess.save(o);
+        }
+    }
+
+    void removeItem(Object o) {
+        synchronized (Database.classinfo) {
+            sess.remove(o);
         }
     }
 

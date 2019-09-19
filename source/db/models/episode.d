@@ -7,7 +7,7 @@ import hibernated.annotations;
 class Episode {
     @Generated @Id long id;
     string name;
-    string dir_path;
+    string file_path;
     string description = "";
     double rating = 0;
     string picture_path = "";
