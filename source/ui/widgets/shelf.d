@@ -79,15 +79,39 @@ public:
         });
         auto lblName = new Label(tvs.name);
         lblName.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
-        lblName.setPadding(7, 7);
+        lblName.setPadding(5, 5);
+        lblName.modifyFg(GtkStateType.NORMAL, new Color(235, 235, 235));
         lblName.setLineWrap(true);
         lblName.setLineWrapMode(PangoWrapMode.CHAR);
         lblName.setMaxWidthChars(10);
         box.packEnd(lblName, false, true, 0);
-        //box.add(new Label(tvs.year.to!string));
+
+        auto starBox = new Box(GtkOrientation.HORIZONTAL, 3);
+        starBox.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
+        starBox.setHalign(GtkAlign.START);
+
+        auto lblRateing = new Label(tvs.rating.to!string);
+        lblRateing.setMarginRight(3);
+        lblRateing.setPadding(0, 3);
+        lblRateing.modifyFg(GtkStateType.NORMAL, new Color(235, 235, 235));
+
+        auto starImg = new Image(new ThemedIcon("starred"), GtkIconSize.MENU);
+        starImg.setMarginLeft(3);
+
+        starBox.add(starImg);
+        starBox.add(lblRateing);
+        box.packStart(starBox, false, false, 0);
+
         btn.add(box);
-        btn.setRelief(GtkReliefStyle.NORMAL);
+        btn.setRelief(GtkReliefStyle.NONE);
+        btn.addOnClicked(&activate);
         add(btn);
     }
 
+private:
+    void activate(Button b) {
+        import std.stdio;
+
+        writeln(getData().name);
+    }
 }

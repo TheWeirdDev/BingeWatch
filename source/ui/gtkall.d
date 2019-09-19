@@ -31,6 +31,7 @@ public {
     import gtk.Entry, gtk.EditableIF;
     import gtk.InfoBar;
     import gdk.Threads;
+    import gio.ThemedIcon;
     import gtk.ScrolledWindow, gtk.FlowBox, gtk.FlowBoxChild;
     import gdk.Pixbuf, gdk.Color;
     import gdk.Window : GdkWin = Window;

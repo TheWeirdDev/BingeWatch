@@ -19,7 +19,7 @@ alias TVShowCallback = void delegate(TVShow, Exception);
 private class TVShowMetadataDownloader : Thread {
 private:
     TVShow tv;
-    TVShowCallback cb;
+    TVShowCallback callback;
     Database ds;
 
 public:
@@ -28,7 +28,7 @@ public:
         super(&run);
         this.ds = Database.getInstance();
         this.tv = tv;
-        this.cb = callback;
+        this.callback = callback;
     }
 
     void run() {
@@ -60,13 +60,11 @@ public:
 
             // Remove episodes that don't exist anymore
             foreach (ref old; tv.episodes) {
-                foreach (ref ep; newEps) {
-                    if (old.file_path == ep.file_path)
-                        break;
-                }
-                ds.removeItem(old);
+                if (newEps.filter!(e => e.file_path == old.file_path).empty)
+                    ds.removeItem(old);
                 //TODO: std.file.remove(old.picture_path);
             }
+
             foreach (s; seasonsAndEpisodes.keys.sort) {
                 //TODO: Download images
                 JSONValue season = TMDB.getSeason(tvs.tmdb_id, s);
@@ -74,7 +72,7 @@ public:
                 foreach (ref ep; seasonsAndEpisodes[s]) {
                     auto fil = tv.episodes.filter!(e => e.file_path == ep.file_path);
                     if (fil.empty) {
-                        ep.name = format("%s S%dE%d", tv.name, ep.season, ep.num);
+                        ep.name = format("%s S%02dE%02d", tv.name, ep.season, ep.num);
                         ds.addItem(ep);
                     } else {
                         ep.id = fil.array[0].id;
@@ -97,9 +95,9 @@ public:
                 }
             }
 
-            cb(tvs, null);
+            callback(tvs, null);
         } catch (Exception e) {
-            cb(null, e);
+            callback(null, e);
         }
     }
 }
