@@ -2,7 +2,7 @@ module tmdb.tmdb;
 
 import std.process;
 import std.json, std.conv, std.format;
-import std.algorithm, std.string;
+import std.algorithm, std.range, std.string;
 import std.uri;
 import core.time;
 import requests;
@@ -36,28 +36,21 @@ static:
         return req.get(url).responseBody.toString();
     }
 
-    //     // Cache instantiation flag in thread-local bool
-    //     // Thread local
-    //     static bool instantiated_;
-    //     // Thread global
-    //     __gshared TMDB instance_;
-
-    // public:
-    //     static TMDB getInstance() {
-    //         if (!instantiated_) {
-    //             synchronized (TMDB.classinfo) {
-    //                 if (!instance_) {
-    //                     instance_ = new TMDB();
-    //                 }
-    //                 instantiated_ = true;
-    //             }
-    //         }
-    //         return instance_;
-    //     }
 static:
 
     ulong searchTVShow(in string name) {
         auto url = makeUrl("search/tv", format!"query=%s&page=1&"(name.encode));
+        auto content = getRequest(url);
+        auto resp = parseJSON(content);
+        if (resp["total_results"].integer == 0) {
+            throw new Exception("No metadata found for '" ~ name ~ "'");
+        }
+        return cast(ulong) resp["results"].array[0]["id"].integer;
+    }
+
+    ulong searchMovie(in string name) {
+        auto url = makeUrl("search/movie",
+                format!"query=%s&page=1&include_adult=true&"(name.encode));
         auto content = getRequest(url);
         auto resp = parseJSON(content);
         if (resp["total_results"].integer == 0) {
@@ -93,7 +86,6 @@ static:
             tvs.creators = resp["created_by"].array
                 .map!((item) { return item["name"].str; })
                 .to!string;
-            tvs.rating = resp["vote_average"].floating;
 
             auto fad = resp["first_air_date"].str;
             tvs.year = fad[0 .. fad.indexOf("-")].to!int;
@@ -108,12 +100,35 @@ static:
         return tvs;
     }
 
-    // Movie getMovie(uint id) {
-    //     auto url = makeUrl(format!"tv/%d"(id));
-    //     auto content = get(url);
-    //     auto response = parseJSON(content);
-    //     auto m = new Movie;
+    Movie getMovie(in ulong id) {
+        auto url = makeUrl(format!"movie/%d"(id), "&append_to_response=release_dates&");
+        auto content = getRequest(url);
+        auto resp = parseJSON(content);
+        auto m = new Movie;
+        try {
+            m.name = resp["title"].str;
+            m.tmdb_id = resp["id"].integer;
+            m.description = resp["overview"].str;
+            m.rating = resp["vote_average"].floating;
+            m.genres = resp["genres"].array
+                .map!((item) { return item["name"].str; })
+                .to!string;
 
-    // }
+            auto rd = resp["release_date"].str;
+            m.year = rd[0 .. rd.indexOf("-")].to!int;
+
+            m.cover_picture = resp["backdrop_path"].str;
+            m.picture = resp["poster_path"].str;
+            m.imdb_id = resp["imdb_id"].str;
+            m.length = resp["runtime"].integer;
+            m.age_rating = resp["release_dates"]["results"].array.filter!(
+                    item => item["iso_3166_1"].str == "US").array[0]["release_dates"]
+                .array[0]["certification"].to!string;
+
+        } catch (Exception e) {
+            throw new Exception("Failed to load matadata: " ~ e.msg);
+        }
+        return m;
+    }
 
 }

@@ -3,4 +3,7 @@
     <gresource prefix="/com/theweirddev/bingewatch">
         <file preprocess="xml-stripblanks">data/main_window.ui</file>
     </gresource>
+    <gresource prefix="/com/theweirddev/bingewatch">
+        <file preprocess="xml-stripblanks">data/menus.ui</file>
+    </gresource>
 </gresources>

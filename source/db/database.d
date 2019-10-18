@@ -60,12 +60,28 @@ public:
         sFactory.close();
     }
 
+    void refresh(TVShow tvs) {
+        sess.refresh(tvs);
+    }
+
+    void refresh(Movie m) {
+        sess.refresh(m);
+    }
+
     Movie[] getMovies(string order = "name") {
-        return sess.createQuery("FROM Movie ORDER BY " ~ order).list!Movie();
+        auto res = sess.createQuery("FROM Movie ORDER BY " ~ order).list!Movie();
+        foreach (ref m; res) {
+            refresh(m);
+        }
+        return res;
     }
 
     TVShow[] getShows(string order = "name") {
-        return sess.createQuery("FROM TVShow ORDER BY " ~ order).list!TVShow();
+        auto res = sess.createQuery("FROM TVShow ORDER BY " ~ order).list!TVShow();
+        foreach (ref tv; res) {
+            refresh(tv);
+        }
+        return res;
     }
 
     TVShow getShow(string name) {

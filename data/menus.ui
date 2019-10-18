@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+<requires lib="gtk+" version="3.20"/>
+  <menu id="import-menu">
+    <section>
+      <item>
+        <attribute name="label" context="Menu item to import a TVShow">Import TVShow</attribute>
+        <attribute name="action">win.importTV</attribute>
+        <attribute name="accel">F3</attribute>
+      </item>
+      <item>
+        <attribute name="label" context="Menu item to import a Movie">Import Movie</attribute>
+        <attribute name="action">win.importMovie</attribute>
+        <attribute name="accel">F4</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

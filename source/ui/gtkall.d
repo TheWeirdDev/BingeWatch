@@ -3,8 +3,8 @@ module ui.gtkall;
 public {
     import gtk.Stack;
     import gtk.Label;
-    import gtk.Button;
-    import gtk.Window;
+    import gtk.Button, gtk.ButtonBox, gtk.ToggleButton, gtk.MenuButton;
+    import gtk.ApplicationWindow;
     import gtk.Main;
     import gdk.X11;
     import gtk.Builder;
@@ -30,12 +30,14 @@ public {
     import gtk.FileChooserDialog, gtk.Dialog;
     import gtk.Entry, gtk.EditableIF;
     import gtk.InfoBar;
+    import gtk.HeaderBar;
     import gdk.Threads;
     import gio.ThemedIcon;
     import gtk.ScrolledWindow, gtk.FlowBox, gtk.FlowBoxChild;
     import gdk.Pixbuf, gdk.Color;
     import gdk.Window : GdkWin = Window;
-
+    import gio.MenuModel, gio.Menu, gio.MenuItem;
+    import gio.SimpleAction;
     import cairo.Context, gdk.RGBA;
     import glib.Timeout;
 }

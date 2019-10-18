@@ -15,6 +15,7 @@ import db.database;
 import tmdb.tmdb;
 
 alias TVShowCallback = void delegate(TVShow, Exception);
+alias MovieCallback = void delegate(Movie, Exception);
 
 private class TVShowMetadataDownloader : Thread {
 private:
@@ -33,7 +34,7 @@ public:
 
     void run() {
         try {
-            enum reg = ctRegex!("S(\\d\\d?).{0,2}E(\\d\\d?).*\\.(mkv|mp4|wmv|mpg|avi|mpeg)$", "i");
+            enum reg = ctRegex!("S(\\d\\d?).{0,2}E(\\d+).*\\.(mkv|mp4|wmv|mpg|avi|mpeg)$", "i");
             Episode[][int] seasonsAndEpisodes;
             Episode[] newEps;
             foreach (string path; std.file.dirEntries(tv.dir_path, std.file.SpanMode.breadth)) {
@@ -57,6 +58,8 @@ public:
             tvs.dir_path = tv.dir_path;
             if (tvs.picture != "")
                 download(getImageUrl(tvs.picture), getImagesDirName() ~ tvs.picture);
+            if (tvs.cover_picture != "")
+                download(getImageUrl(tvs.cover_picture), getImagesDirName() ~ tvs.cover_picture);
 
             // Remove episodes that don't exist anymore
             foreach (ref old; tv.episodes) {
@@ -66,7 +69,6 @@ public:
             }
 
             foreach (s; seasonsAndEpisodes.keys.sort) {
-                //TODO: Download images
                 JSONValue season = TMDB.getSeason(tvs.tmdb_id, s);
                 auto eps = season["episodes"].array;
                 foreach (ref ep; seasonsAndEpisodes[s]) {
@@ -77,7 +79,7 @@ public:
                     } else {
                         ep.id = fil.array[0].id;
                         ep.watched = fil.array[0].watched;
-                        tv.episodes ~= ep;
+                        //tv.episodes ~= ep;
                     }
                     auto fil2 = eps.filter!(e => e["episode_number"].integer == ep.num);
                     if (!fil2.empty) {
@@ -94,7 +96,6 @@ public:
                         download(getImageUrl(ep.picture_path), dlpath);
                 }
             }
-
             callback(tvs, null);
         } catch (Exception e) {
             callback(null, e);
@@ -102,7 +103,46 @@ public:
     }
 }
 
+private class MovieMetadataDownloader : Thread {
+private:
+    Movie m;
+    MovieCallback callback;
+    Database ds;
+
+public:
+
+    this(Movie m, MovieCallback callback) {
+        super(&run);
+        this.ds = Database.getInstance();
+        this.m = m;
+        this.callback = callback;
+    }
+
+    void run() {
+        try {
+            auto tmdbid = TMDB.searchMovie(m.name);
+            auto movie = TMDB.getMovie(tmdbid);
+
+            movie.id = m.id;
+            movie.file_path = m.file_path;
+            if (movie.picture != "")
+                download(getImageUrl(movie.picture), getImagesDirName() ~ movie.picture);
+            if (movie.cover_picture != "")
+                download(getImageUrl(movie.cover_picture), getImagesDirName() ~ movie.cover_picture);
+            callback(movie, null);
+        } catch (Exception e) {
+            callback(null, e);
+        }
+
+    }
+}
+
 void loadMetadataFor(TVShow tvs, TVShowCallback callback) {
-    auto thread1 = new TVShowMetadataDownloader(tvs, callback);
-    thread1.start();
+    auto tdl = new TVShowMetadataDownloader(tvs, callback);
+    tdl.start();
+}
+
+void loadMetadataFor(Movie m, MovieCallback callback) {
+    auto mdl = new MovieMetadataDownloader(m, callback);
+    mdl.start();
 }

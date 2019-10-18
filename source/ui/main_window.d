@@ -9,7 +9,6 @@ import ui.widgets.welcome;
 import ui.widgets.shelf;
 import db.library;
 import db.models;
-import vlcd;
 import tmdb.tmdb;
 import tmdb.metadata;
 
@@ -17,14 +16,15 @@ class MainWindow {
 
 private:
     Builder builder;
-    Window w;
+    ApplicationWindow w;
     Stack mainStack;
     InfoBar infobar;
+    HeaderBar header;
+    ButtonBox headerbtns;
     Timeout infoTimeout;
     Label message;
     Box videosBox;
     Box contents;
-    Vlc v;
     Library lib;
 
 public:
@@ -35,26 +35,20 @@ public:
     }
 
     void show() {
-        w = cast(Window) builder.getObject("window");
+        w = cast(ApplicationWindow) builder.getObject("window");
         w.addOnDelete(delegate(Event, Widget) {
             //   v.stop();
             Main.quit();
             return true;
         });
 
-        // Button b = cast(Button) builder.getObject("btn");
-        // b.addOnClicked((Button) { v.play(); });
-
-        // Button sub = cast(Button) builder.getObject("sub");
-        // sub.addOnClicked((Button) {});
-
-        // DrawingArea player = cast(DrawingArea) builder.getObject("player");
-
-        //Box playerBox = cast(Box) builder.getObject("box_player");
-        // Button next = cast(Button) builder.getObject("btn_next");
         mainStack = cast(Stack) builder.getObject("main_stack");
         videosBox = cast(Box) builder.getObject("box_videos");
         infobar = cast(InfoBar) builder.getObject("infobar");
+        header = cast(HeaderBar) builder.getObject("header");
+        headerbtns = cast(ButtonBox) builder.getObject("header_btn_box");
+        initMenus();
+
         message = new Label("");
         infobar.getContentArea().add(message);
         //infobar.addButton("Close", ResponseType.CLOSE);
@@ -122,15 +116,39 @@ public:
 
     }
 
-    void showError(string text, bool autoClose = true) {
-        showMessage(text, autoClose, GtkMessageType.ERROR);
+    void initMenus() {
+        auto b = new Builder;
+        b.addFromResource("/com/theweirddev/bingewatch/data/menus.ui");
+        auto m = cast(MenuModel) b.getObject("import-menu");
+
+        auto importTVAction = new SimpleAction("importTV", null);
+        importTVAction.addOnActivate((v, a) => importTVShow());
+        w.addAction(importTVAction);
+
+        auto importMovieAction = new SimpleAction("importMovie", null);
+        importMovieAction.addOnActivate((v, a) => importMovie());
+        w.addAction(importMovieAction);
+
+        auto mb = new MenuButton;
+        auto icon = new Image;
+        icon.setFromGicon(new ThemedIcon("list-add"), GtkIconSize.LARGE_TOOLBAR);
+        mb.setImage(icon);
+        mb.setMenuModel(m);
+        headerbtns.add(mb);
+        headerbtns.setChildNonHomogeneous(mb, true);
+
     }
 
-    void showMessage(string text, bool autoClose = true, GtkMessageType msgType = GtkMessageType
-            .INFO) {
+    void showError(string text, bool autoClose = true) {
+        showMessage(text, autoClose, true, GtkMessageType.ERROR);
+    }
+
+    void showMessage(string text, bool autoClose = true, bool showClose = true,
+            GtkMessageType msgType = GtkMessageType.INFO) {
         message.setText(text);
         infobar.setMessageType(msgType);
         infobar.setRevealed(true);
+        infobar.setShowCloseButton(showClose);
         if (infoTimeout !is null) {
             infoTimeout.stop();
         }
@@ -150,9 +168,7 @@ public:
             auto i = new Image();
             i.setFromIconName("gtk-add", GtkIconSize.LARGE_TOOLBAR);
             welcome.addButton("Add a movie", "Import a movie into your collection", i, (Button b) {
-                mainStack.setVisibleChildName("player_page");
-
-                //addMovie();
+                importMovie();
             });
             auto i2 = new Image();
             i2.setFromIconName("gtk-add", GtkIconSize.LARGE_TOOLBAR);
@@ -163,7 +179,7 @@ public:
             contents.packStart(welcome, true, true, 0);
         } else {
             auto s = new ScrolledWindow();
-            s.add(new Shelf(lib));
+            s.add(new Shelf);
             contents.packStart(s, true, true, 0);
         }
         contents.showAll();
@@ -172,57 +188,86 @@ public:
     void importTVShow() {
         //TODO: Check if download is in progress
         auto name = "";
-        debug {
-            auto dir = "/run/media/alireza/Movies/Khareji/Serial/Friends/";
-            name = "Friends";
-        } else {
-            auto dir = selectTVShowDir(name);
-        }
+        auto dir = selectTVShowDir(name);
+
         if (dir == "" || name == "") {
             return;
         }
         //TODO: Check if this show already exists
         auto tvs = lib.addTVShow(name, dir);
-        showMessage("Downloading metadata. This takes a while, please wait.", false);
+        showMessage("Downloading metadata. This takes a while, please wait.", false, false);
 
         loadMetadataFor(tvs, (TVShow tv, Exception e) {
             if (e !is null) {
                 showError("Error: " ~ e.msg);
                 return;
             }
+
             lib.update(tv);
             reloadLibary();
             showMessage("Done");
         });
     }
 
-    string selectTVShowDir(out string name) {
-        auto fcd = new FileChooserDialog("Select your TVShow directory", w, FileChooserAction.SELECT_FOLDER,
-                ["Select", "Cancel"], [ResponseType.ACCEPT, ResponseType.CANCEL]);
-        auto res = fcd.run();
-        auto dir = "";
+    void importMovie() {
+        string name;
+        auto file = selectMovieFile(name);
+        if (file == "" || name == "") {
+            return;
+        }
+        //TODO: Check if this show already exists
+        auto mv = lib.addMovie(name, file);
+        showMessage("Downloading metadata. This takes a while, please wait.", false, false);
+
+        loadMetadataFor(mv, (Movie m, Exception e) {
+            if (e !is null) {
+                showError("Error: " ~ e.msg);
+                return;
+            }
+
+            lib.update(m);
+            reloadLibary();
+            showMessage("Done");
+        });
+    }
+
+    string selectFileOrDir(string msg, FileChooserAction action) {
+        if (action != FileChooserAction.SELECT_FOLDER && action != FileChooserAction.OPEN) {
+            return "";
+        }
+        auto fcd = new FileChooserDialog(msg, w, action, ["Select", "Cancel"],
+                [ResponseType.ACCEPT, ResponseType.CANCEL]);
+        const res = fcd.run();
+        auto ret = "";
         {
             scope (exit)
                 fcd.destroy();
             if (res != ResponseType.ACCEPT) {
                 return "";
             }
-            dir = fcd.getFilename();
+            ret = fcd.getFilename();
         }
-        if (!exists(dir) || !isDir(dir)) {
+
+        if ((!exists(ret)) || (action == FileChooserAction.SELECT_FOLDER && !isDir(ret))) {
+            return "";
+        } else if (FileChooserAction.OPEN && !isFile(ret)) {
             return "";
         }
-        name = dir[dir.lastIndexOf("/") + 1 .. $];
+        return ret;
+    }
 
+    string confirmName(string msg, string name) {
         auto d = new Dialog("Import", w, GtkDialogFlags.MODAL, [
                 "Cancel", "Import"
                 ], [ResponseType.CANCEL, ResponseType.ACCEPT]);
+        d.setDefaultResponse(ResponseType.ACCEPT);
+
         auto box = new Box(GtkOrientation.VERTICAL, 5);
         box.setMargin(10);
         auto box2 = new Box(GtkOrientation.HORIZONTAL, 5);
         box2.setHexpand(true);
 
-        auto lbl = new Label("TVShow name:");
+        auto lbl = new Label(msg);
         box2.add(lbl);
 
         auto ent = new Entry(name);
@@ -233,14 +278,29 @@ public:
         box.add(box2);
 
         d.getContentArea().add(box);
+        d.setDefaultSize(500, -1);
         d.showAll();
-        res = d.run();
+        auto res = d.run();
         scope (exit)
             d.destroy();
         if (res != ResponseType.ACCEPT) {
             return "";
         }
+        return name;
+    }
+
+    string selectTVShowDir(out string name) {
+        auto dir = selectFileOrDir("Select your TVShow directory", FileChooserAction.SELECT_FOLDER);
+        name = dir[dir.lastIndexOf("/") + 1 .. $];
+        name = confirmName("TVShow name:", name);
         return dir;
+    }
+
+    string selectMovieFile(out string name) {
+        auto file = selectFileOrDir("Select your Movie", FileChooserAction.OPEN);
+        name = file[file.lastIndexOf("/") + 1 .. file.lastIndexOf(".")];
+        name = confirmName("Movie name:", name);
+        return file;
     }
 
 }

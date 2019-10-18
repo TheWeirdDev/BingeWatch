@@ -1,6 +1,7 @@
 module db.models.tvshow;
 
 import db.models.episode;
+import db.models;
 import hibernated.annotations;
 
 @Table("shows")

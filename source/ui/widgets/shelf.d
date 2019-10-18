@@ -5,18 +5,19 @@ import std.conv;
 import utils.util;
 import ui.gtkall;
 import db.models;
+import db.database;
 import db.library;
 
 private enum Width = 150, Height = 235;
 
 class Shelf : FlowBox {
 private:
-    Library lib;
+    Database db;
 
 public:
-    this(Library l) {
+    this() {
         super();
-        lib = l;
+        db = Database.getInstance();
         setHomogeneous(true);
         setSelectionMode(SelectionMode.NONE);
         setMaxChildrenPerLine(8);
@@ -26,38 +27,27 @@ public:
         setRowSpacing(5);
         setMargin(this, 10);
         // for (int i = 0; i < 100; i++)
-        foreach (ref tv; lib.getShows()) {
+        foreach (ref tv; db.getShows()) {
             auto btn = new ShelfItemTVShow(tv);
+            btn.setSizeRequest(Width, Height);
+            add(btn);
+        }
+        foreach (ref m; db.getMovies()) {
+            auto btn = new ShelfItemMovie(m);
             btn.setSizeRequest(Width, Height);
             add(btn);
         }
     }
 
-    void reload() {
-        removeAll();
-
-    }
 }
 
 private class BaseShelfItem(T) : FlowBoxChild {
 protected:
     T data;
 
-    this(T t) {
+    this(ref T t) {
         super();
         data = t;
-    }
-
-    T getData() {
-        return data;
-    }
-}
-
-private class ShelfItemTVShow : BaseShelfItem!(TVShow) {
-
-public:
-    this(TVShow tvs) {
-        super(tvs);
 
         auto box = new Box(GtkOrientation.VERTICAL, 5);
         auto btn = new Button();
@@ -70,19 +60,19 @@ public:
         btn.setSizeRequest(Width, Height);
 
         box.addOnDraw((Scoped!Context c, Widget w) {
-            Pixbuf p = new Pixbuf(getImagesDirName() ~ tvs.picture,
+            Pixbuf p = new Pixbuf(getImagesDirName() ~ data.picture,
                 w.getAllocatedWidth(), w.getAllocatedHeight(), false);
             c.setSourcePixbuf(p, 0, 0);
             c.rectangle(0, 0, w.getAllocatedWidth(), w.getAllocatedHeight());
             c.fill();
             return false;
         });
-        auto lblName = new Label(tvs.name);
+        auto lblName = new Label(data.name);
         lblName.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
         lblName.setPadding(5, 5);
         lblName.modifyFg(GtkStateType.NORMAL, new Color(235, 235, 235));
         lblName.setLineWrap(true);
-        lblName.setLineWrapMode(PangoWrapMode.CHAR);
+        lblName.setLineWrapMode(PangoWrapMode.WORD);
         lblName.setMaxWidthChars(10);
         box.packEnd(lblName, false, true, 0);
 
@@ -90,7 +80,7 @@ public:
         starBox.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
         starBox.setHalign(GtkAlign.START);
 
-        auto lblRateing = new Label(tvs.rating.to!string);
+        auto lblRateing = new Label(data.rating.to!string);
         lblRateing.setMarginRight(3);
         lblRateing.setPadding(0, 3);
         lblRateing.modifyFg(GtkStateType.NORMAL, new Color(235, 235, 235));
@@ -104,12 +94,36 @@ public:
 
         btn.add(box);
         btn.setRelief(GtkReliefStyle.NONE);
-        btn.addOnClicked(&activate);
+        btn.addOnClicked(&clicked);
         add(btn);
     }
 
-private:
-    void activate(Button b) {
+    T getData() {
+        return data;
+    }
+
+    abstract void clicked(Button);
+}
+
+private class ShelfItemTVShow : BaseShelfItem!(TVShow) {
+
+    this(ref TVShow tvs) {
+        super(tvs);
+    }
+
+    override void clicked(Button b) {
+        import std.stdio;
+
+        writeln(getData().name);
+    }
+}
+
+private class ShelfItemMovie : BaseShelfItem!(Movie) {
+    this(ref Movie m) {
+        super(m);
+    }
+
+    override void clicked(Button b) {
         import std.stdio;
 
         writeln(getData().name);

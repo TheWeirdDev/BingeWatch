@@ -7,16 +7,17 @@ import std.parallelism;
 class Movie {
 	@Generated @Id long id;
 	long tmdb_id;
-	long imdb_id;
+	string imdb_id = "";
 	string name;
 	string file_path;
-	string creators;
-	string quality;
-	string description;
-	string genres;
-	long year;
-	string age_rating;
-	float rating;
-	long length;
-	long watched;
+	string cover_picture = "";
+	string picture = "";
+	string quality = "";
+	string description = "";
+	string genres = "[]";
+	long year = 0;
+	string age_rating = "";
+	double rating = 0.0;
+	long length = 0;
+	long watched = 0;
 }
