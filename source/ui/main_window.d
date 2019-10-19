@@ -190,7 +190,7 @@ public:
         auto name = "";
         auto dir = selectTVShowDir(name);
 
-        if (dir == "" || name == "") {
+        if (dir.empty || name.empty) {
             return;
         }
         //TODO: Check if this show already exists
@@ -212,7 +212,7 @@ public:
     void importMovie() {
         string name;
         auto file = selectMovieFile(name);
-        if (file == "" || name == "") {
+        if (file.empty || name.empty) {
             return;
         }
         //TODO: Check if this show already exists
@@ -291,15 +291,23 @@ public:
 
     string selectTVShowDir(out string name) {
         auto dir = selectFileOrDir("Select your TVShow directory", FileChooserAction.SELECT_FOLDER);
+        if (dir.empty)
+            return dir;
         name = dir[dir.lastIndexOf("/") + 1 .. $];
         name = confirmName("TVShow name:", name);
+        if (name.empty)
+            return name;
         return dir;
     }
 
     string selectMovieFile(out string name) {
         auto file = selectFileOrDir("Select your Movie", FileChooserAction.OPEN);
+        if (file.empty)
+            return file;
         name = file[file.lastIndexOf("/") + 1 .. file.lastIndexOf(".")];
         name = confirmName("Movie name:", name);
+        if (name.empty)
+            return name;
         return file;
     }
 
