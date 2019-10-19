@@ -75,7 +75,7 @@ protected:
             return false;
         });
         auto lblName = new Label(data.name);
-        lblName.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
+        lblName.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.6));
         lblName.setPadding(5, 5);
         lblName.modifyFg(GtkStateType.NORMAL, new Color(235, 235, 235));
         lblName.setLineWrap(true);
@@ -84,7 +84,7 @@ protected:
         box.packEnd(lblName, false, true, 0);
 
         auto starBox = new Box(GtkOrientation.HORIZONTAL, 3);
-        starBox.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.4));
+        starBox.overrideBackgroundColor(GtkStateFlags.NORMAL, new RGBA(0, 0, 0, 0.6));
         starBox.setHalign(GtkAlign.START);
 
         auto lblRateing = new Label(data.rating.to!string);
