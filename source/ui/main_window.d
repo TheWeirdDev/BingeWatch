@@ -1,7 +1,7 @@
 module ui.main_window;
 import std.stdio;
 import std.file;
-import std.string;
+import std.string, std.regex;
 import std.concurrency;
 import core.time;
 import ui.gtkall;
@@ -270,7 +270,9 @@ public:
         auto lbl = new Label(msg);
         box2.add(lbl);
 
-        auto ent = new Entry(name);
+        auto re = ctRegex!(r"[._-]", "g");
+
+        auto ent = new Entry(name.replaceAll(re, " "));
         ent.setHexpand(true);
         ent.addOnChanged((EditableIF) { name = ent.getText(); });
         box2.add(ent);
