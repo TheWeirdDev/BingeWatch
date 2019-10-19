@@ -1,6 +1,7 @@
-# 📺 BingeWatch
-
-BingeWatch is a Linux Gtk app that helps you organize and watch your movies and tv shows.
+<h1 align="center">
+    📺 BingeWatch
+</h1>
+<h4 align="center">BingeWatch is a Linux Gtk app that helps you organize and watch your movies and tv shows.</h4>
 
 <p align="center">
   <img alt="bingewatch_screenshot" src="screenshot.png">
