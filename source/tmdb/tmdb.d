@@ -9,7 +9,7 @@ import requests;
 import db.models;
 import std.exception;
 
-import config;
+static import config;
 
 class TMDB {
 private:
@@ -21,7 +21,7 @@ private:
 
 public:
     shared static this() {
-        apiKey = API_KEY;
+        apiKey = config.API_KEY;
         if (apiKey != "")
             return;
         debug apiKey = environment.get("API_KEY", "");

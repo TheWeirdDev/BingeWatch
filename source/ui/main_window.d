@@ -11,6 +11,7 @@ import db.library;
 import db.models;
 import tmdb.tmdb;
 import tmdb.metadata;
+static import config;
 
 class MainWindow {
 
@@ -160,6 +161,7 @@ public:
         if (auto t = contents.getChildren()) {
             foreach (ref w; t.toArray!Widget()) {
                 contents.remove(w);
+                w.destroy();
             }
         }
         if (lib.isEmpty()) {
@@ -237,6 +239,19 @@ public:
         }
         auto fcd = new FileChooserDialog(msg, w, action, ["Select", "Cancel"],
                 [ResponseType.ACCEPT, ResponseType.CANCEL]);
+        if (action == FileChooserAction.OPEN) {
+            FileFilter all = new FileFilter();
+            all.setName("All files");
+            all.addPattern("*");
+            fcd.addFilter(all);
+
+            FileFilter files = new FileFilter();
+            files.setName("Supported video files");
+            foreach (mime; config.supportedMimeTypes)
+                files.addMimeType(mime);
+            fcd.addFilter(files);
+            fcd.setFilter(files);
+        }
         const res = fcd.run();
         auto ret = "";
         {

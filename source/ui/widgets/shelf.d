@@ -42,6 +42,9 @@ public:
 }
 
 private class BaseShelfItem(T) : FlowBoxChild {
+private:
+    Pixbuf pic = void;
+
 protected:
     T data;
 
@@ -60,9 +63,13 @@ protected:
         btn.setSizeRequest(Width, Height);
 
         box.addOnDraw((Scoped!Context c, Widget w) {
-            Pixbuf p = new Pixbuf(getImagesDirName() ~ data.picture,
-                w.getAllocatedWidth(), w.getAllocatedHeight(), false);
-            c.setSourcePixbuf(p, 0, 0);
+
+            if (!pic) {
+                pic = new Pixbuf(getImagesDirName() ~ data.picture,
+                    w.getAllocatedWidth(), w.getAllocatedHeight(), false);
+            }
+
+            c.setSourcePixbuf(pic, 0, 0);
             c.rectangle(0, 0, w.getAllocatedWidth(), w.getAllocatedHeight());
             c.fill();
             return false;

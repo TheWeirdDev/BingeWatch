@@ -27,12 +27,13 @@ public {
     // import gdk.Event;
     // import gobject.ParamSpec;
     // import gobject.ObjectG;
-    import gtk.FileChooserDialog, gtk.Dialog;
+    import gtk.FileChooserDialog, gtk.FileFilter, gtk.Dialog;
     import gtk.Entry, gtk.EditableIF;
     import gtk.InfoBar;
     import gtk.HeaderBar;
     import gdk.Threads;
     import gio.ThemedIcon;
+    import gtk.Requisition;
     import gtk.ScrolledWindow, gtk.FlowBox, gtk.FlowBoxChild;
     import gdk.Pixbuf, gdk.Color;
     import gdk.Window : GdkWin = Window;
