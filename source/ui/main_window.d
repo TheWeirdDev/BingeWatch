@@ -22,6 +22,7 @@ private:
     InfoBar infobar;
     HeaderBar header;
     ButtonBox headerbtns;
+    Button back;
     Timeout infoTimeout;
     Label message;
     Box videosBox;
@@ -30,24 +31,39 @@ private:
 
 public:
     this() {
-        builder = new Builder();
-        builder.addFromResource("/com/theweirddev/bingewatch/data/main_window.ui");
         lib = new Library;
     }
 
-    void show() {
-        w = cast(ApplicationWindow) builder.getObject("window");
-        w.addOnDelete(delegate(Event, Widget) {
-            //   v.stop();
-            Main.quit();
-            return true;
-        });
+    void show(ApplicationWindow win) {
+        w = win;
+        header = new HeaderBar();
+        header.setShowCloseButton(true);
+        header.setTitle("BingeWatch");
+        w.setTitlebar(header);
 
-        mainStack = cast(Stack) builder.getObject("main_stack");
-        videosBox = cast(Box) builder.getObject("box_videos");
-        infobar = cast(InfoBar) builder.getObject("infobar");
-        header = cast(HeaderBar) builder.getObject("header");
-        headerbtns = cast(ButtonBox) builder.getObject("header_btn_box");
+        mainStack = new Stack();
+        videosBox = new VBox(false, 0);
+        infobar = new InfoBar();
+        infobar.setMessageType(MessageType.INFO);
+        videosBox.packStart(infobar, false, true, 0);
+
+        headerbtns = new ButtonBox(GtkOrientation.HORIZONTAL);
+        headerbtns.setHomogeneous(false);
+        back = new Button();
+        auto icon = new Image;
+        icon.setFromGicon(new ThemedIcon("go-previous"), GtkIconSize.LARGE_TOOLBAR);
+        back.setImage(icon);
+        back.setSensitive(false);
+        back.addOnClicked((Button) { mainStack.setVisibleChildName("main_page"); });
+        headerbtns.packStart(back, true, true, 0);
+        headerbtns.setChildNonHomogeneous(back, true);
+
+        Button discover = new Button("Discover");
+        header.packEnd(discover);
+
+        header.packStart(headerbtns);
+        mainStack.addNamed(videosBox, "main_page");
+        w.add(mainStack);
         initMenus();
 
         message = new Label("");
@@ -71,10 +87,6 @@ public:
 
         StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
                 STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-        Button back = cast(Button) builder.getObject("btn_back");
-        back.setSensitive(false);
-        back.addOnClicked((Button) { mainStack.setVisibleChildName("main_page"); });
 
         mainStack.addOnNotify((ParamSpec, ObjectG) {
             back.setSensitive(mainStack.getVisibleChildName() != "main_page");
@@ -135,7 +147,7 @@ public:
         icon.setFromGicon(new ThemedIcon("list-add"), GtkIconSize.LARGE_TOOLBAR);
         mb.setImage(icon);
         mb.setMenuModel(m);
-        headerbtns.add(mb);
+        headerbtns.packStart(mb, true, true, 0);
         headerbtns.setChildNonHomogeneous(mb, true);
 
     }

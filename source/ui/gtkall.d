@@ -9,7 +9,7 @@ public {
     import gdk.X11;
     import gtk.Builder;
     import gtk.Widget;
-    import gtk.Box;
+    import gtk.Box, gtk.VBox, gtk.HBox;
     import gdk.Event;
     import gtk.DrawingArea;
     import gtk.c.types;
