@@ -2,11 +2,16 @@ module ui.main_window;
 import std.stdio;
 import std.file;
 import std.string, std.regex;
-import std.concurrency;
-import core.time;
+import std.concurrency, core.thread;
+import core.time, core.memory;
+
+import glib.Idle;
+
+import vlc.vlc_player;
 import ui.gtkall;
 import ui.widgets.welcome;
 import ui.widgets.shelf;
+import ui.widgets.video_player;
 import db.library;
 import db.models;
 import tmdb.tmdb;
@@ -17,6 +22,7 @@ class MainWindow {
 
 private:
     Builder builder;
+    VideoPlayer video_player;
     ApplicationWindow w;
     Stack mainStack;
     InfoBar infobar;
@@ -28,10 +34,26 @@ private:
     Box videosBox;
     Box contents;
     Library lib;
+    string[] pageStack;
+    int width, height;
+
+    void OpenTVShow(TVShow tv) {
+        writeln("TVshow opened: ", tv.name);
+    }
+
+    void OpenMovie(Movie m) {
+        writeln("Movie opened: ", m.file_path);
+
+        w.getSize(width, height);
+        mainStack.setVisibleChildName("player_page");
+        video_player.setMediaPath(m.file_path);
+        video_player.play();
+    }
 
 public:
     this() {
         lib = new Library;
+        pageStack.reserve(4);
     }
 
     void show(ApplicationWindow win) {
@@ -48,27 +70,46 @@ public:
         videosBox.packStart(infobar, false, true, 0);
 
         headerbtns = new ButtonBox(GtkOrientation.HORIZONTAL);
+        headerbtns.setSpacing(5);
         headerbtns.setHomogeneous(false);
         back = new Button();
         auto icon = new Image;
         icon.setFromGicon(new ThemedIcon("go-previous"), GtkIconSize.LARGE_TOOLBAR);
         back.setImage(icon);
         back.setSensitive(false);
-        back.addOnClicked((Button) { mainStack.setVisibleChildName("main_page"); });
+        back.addOnClicked((Button) {
+            switch (mainStack.getVisibleChildName()) {
+            case "main_page":
+                break;
+            case "player_page":
+                if (video_player.isPlaying()) {
+                    video_player.stop();
+                }
+                goto default;
+            default:
+                w.setSizeRequest(width, height);
+                w.resize(width, height);
+                mainStack.setVisibleChildName("main_page");
+            }
+            GC.collect();
+        });
         headerbtns.packStart(back, true, true, 0);
         headerbtns.setChildNonHomogeneous(back, true);
 
         Button discover = new Button("Discover");
+        discover.addOnClicked((Button) {});
         header.packEnd(discover);
-
         header.packStart(headerbtns);
         mainStack.addNamed(videosBox, "main_page");
-        w.add(mainStack);
-        initMenus();
 
+        auto scr = w.getScreen();
+
+        video_player = new VideoPlayer(scr.getWidth(), scr.getHeight());
+
+        mainStack.addNamed(video_player, "player_page");
+        initMenus();
         message = new Label("");
-        infobar.getContentArea().add(message);
-        //infobar.addButton("Close", ResponseType.CLOSE);
+        infobar.getContentArea().add(message); //infobar.addButton("Close", ResponseType.CLOSE);
         infobar.setRevealed(false);
         infobar.addOnResponse((int resp, InfoBar ifb) {
             if (cast(ResponseType) resp == ResponseType.CLOSE) {
@@ -76,7 +117,6 @@ public:
             }
         });
         infobar.setShowCloseButton(true);
-
         auto styleProvider = new CssProvider();
         styleProvider.loadFromData(`
             .title_label {font: 2.2rem raleway;}
@@ -84,44 +124,35 @@ public:
             .button_title {font-size:1.3rem;}
             .button_sub {font-size:1.05rem;}
         `);
-
         StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
                 STYLE_PROVIDER_PRIORITY_APPLICATION);
-
         mainStack.addOnNotify((ParamSpec, ObjectG) {
             back.setSensitive(mainStack.getVisibleChildName() != "main_page");
         }, "visible-child");
-
         contents = new Box(GtkOrientation.VERTICAL, 5);
         contents.setHexpand(true);
         contents.setVexpand(true);
         videosBox.add(contents);
         reloadLibary();
 
-        // next.addOnClicked(delegate(Button b) {
-        //     stack.setVisibleChildName("player_box");
-        // });
         w.setSizeRequest(750, 550);
+        w.add(mainStack);
         w.showAll();
-        //     v = new Vlc(getXid(w.getWindow()));
-        //     player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
-        //    // w.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
-        //     playerBox.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
-        //     player.setEvents(GdkEventMask.EXPOSURE_MASK |
-        //     GdkEventMask.LEAVE_NOTIFY_MASK | GdkEventMask.BUTTON_PRESS_MASK | GdkEventMask.POINTER_MOTION_MASK|
-        //     GdkEventMask.POINTER_MOTION_HINT_MASK);
-        // addondamage???
-        //     player.addOnEvent((Event, Widget w) {
-        //         //x, y, w, h = widget.allocation
-        //         GtkAllocation alloc;
-        //         auto cr = createContext(w.getWindow());
-        //         w.getAllocation(alloc);
-        //         cr.rectangle(0, 0, alloc.width, alloc.height);
-        //         cr.setSourceRgb(0, 0, 0);
-        //         cr.fill();
-        //         return true;
-        //     });
-        //     v.setMediaPath("/home/alireza/Downloads/Fleabag.S02E06.720p.WEB.DL.HEVC.x265.RMT.Farda.DL.mkv");
+
+        video_player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0)); // w.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
+        //player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
+        //player.setEvents(GdkEventMask.EXPOSURE_MASK | GdkEventMask.LEAVE_NOTIFY_MASK | GdkEventMask.BUTTON_PRESS_MASK
+        //         | GdkEventMask.POINTER_MOTION_MASK | GdkEventMask.POINTER_MOTION_HINT_MASK);
+        // player.addOnEvent((Event, Widget w) {
+        //     //x, y, w, h = widget.allocation
+        //     GtkAllocation alloc;
+        //     auto cr = createContext(w.getWindow());
+        //     w.getAllocation(alloc);
+        //     cr.rectangle(0, 0, alloc.width, alloc.height);
+        //     cr.setSourceRgb(0, 0, 0);
+        //     cr.fill();
+        //     return true;
+        // });
 
     }
 
@@ -133,15 +164,12 @@ public:
         auto b = new Builder;
         b.addFromResource("/com/theweirddev/bingewatch/data/menus.ui");
         auto m = cast(MenuModel) b.getObject("import-menu");
-
         auto importTVAction = new SimpleAction("importTV", null);
         importTVAction.addOnActivate((v, a) => importTVShow());
         w.addAction(importTVAction);
-
         auto importMovieAction = new SimpleAction("importMovie", null);
         importMovieAction.addOnActivate((v, a) => importMovie());
         w.addAction(importMovieAction);
-
         auto mb = new MenuButton;
         auto icon = new Image;
         icon.setFromGicon(new ThemedIcon("list-add"), GtkIconSize.LARGE_TOOLBAR);
@@ -149,7 +177,6 @@ public:
         mb.setMenuModel(m);
         headerbtns.packStart(mb, true, true, 0);
         headerbtns.setChildNonHomogeneous(mb, true);
-
     }
 
     void showError(string text, bool autoClose = true) {
@@ -193,7 +220,7 @@ public:
             contents.packStart(welcome, true, true, 0);
         } else {
             auto s = new ScrolledWindow();
-            s.add(new Shelf);
+            s.add(new Shelf(&OpenTVShow, &OpenMovie));
             contents.packStart(s, true, true, 0);
         }
         contents.showAll();
@@ -214,6 +241,7 @@ public:
         loadMetadataFor(tvs, (TVShow tv, Exception e) {
             if (e !is null) {
                 showError("Error: " ~ e.msg);
+                e.msg.writeln();
                 return;
             }
 

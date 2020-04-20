@@ -60,11 +60,11 @@ public:
         sFactory.close();
     }
 
-    void refresh(TVShow tvs) {
+    void refresh(ref TVShow tvs) {
         sess.refresh(tvs);
     }
 
-    void refresh(Movie m) {
+    void refresh(ref Movie m) {
         sess.refresh(m);
     }
 

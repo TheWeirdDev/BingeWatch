@@ -10,12 +10,15 @@ import db.library;
 
 private enum Width = 150, Height = 235;
 
+alias TVShowCallback = void delegate(TVShow);
+alias MovieCallback = void delegate(Movie);
+
 class Shelf : FlowBox {
 private:
     Database db;
 
 public:
-    this() {
+    this(TVShowCallback tvc, MovieCallback mc) {
         super();
         db = Database.getInstance();
         setHomogeneous(true);
@@ -28,12 +31,12 @@ public:
         setMargin(this, 10);
         // for (int i = 0; i < 100; i++)
         foreach (ref tv; db.getShows()) {
-            auto btn = new ShelfItemTVShow(tv);
+            auto btn = new ShelfItemTVShow(tv, tvc);
             btn.setSizeRequest(Width, Height);
             add(btn);
         }
         foreach (ref m; db.getMovies()) {
-            auto btn = new ShelfItemMovie(m);
+            auto btn = new ShelfItemMovie(m, mc);
             btn.setSizeRequest(Width, Height);
             add(btn);
         }
@@ -41,16 +44,18 @@ public:
 
 }
 
-private class BaseShelfItem(T) : FlowBoxChild {
+private abstract class BaseShelfItem(T, C) : FlowBoxChild {
 private:
     Pixbuf pic = void;
 
 protected:
     T data;
+    const C callback;
 
-    this(ref T t) {
+    this(ref T t, ref C c) {
         super();
         data = t;
+        callback = c;
 
         auto box = new Box(GtkOrientation.VERTICAL, 5);
         auto btn = new Button();
@@ -112,27 +117,28 @@ protected:
     abstract void clicked(Button);
 }
 
-private class ShelfItemTVShow : BaseShelfItem!(TVShow) {
+private class ShelfItemTVShow : BaseShelfItem!(TVShow, TVShowCallback) {
 
-    this(ref TVShow tvs) {
-        super(tvs);
+    this(ref TVShow tvs, ref TVShowCallback tvc) {
+        super(tvs, tvc);
     }
 
     override void clicked(Button b) {
         import std.stdio;
 
-        writeln(getData().name);
+        callback(getData());
     }
 }
 
-private class ShelfItemMovie : BaseShelfItem!(Movie) {
-    this(ref Movie m) {
-        super(m);
+private class ShelfItemMovie : BaseShelfItem!(Movie, MovieCallback) {
+    this(ref Movie m, ref MovieCallback mc) {
+        super(m, mc);
     }
 
     override void clicked(Button b) {
         import std.stdio;
 
-        writeln(getData().name);
+        writeln(getData().file_path);
+        callback(getData());
     }
 }

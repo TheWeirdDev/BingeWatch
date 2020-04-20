@@ -23,6 +23,7 @@ public {
     import gdk.Screen;
     import gtk.Image;
     import gtk.Container;
+    import gtk.AspectFrame;
 
     // import gdk.Event;
     // import gobject.ParamSpec;

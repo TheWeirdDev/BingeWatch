@@ -4,6 +4,7 @@ docs.json
 bingewatch.so
 bingewatch.a
 bingewatch
+bingewatch-test*
 *.o
 *.out
 *.a

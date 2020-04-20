@@ -131,7 +131,7 @@ public:
                 download(getImageUrl(movie.cover_picture), getImagesDirName() ~ movie.cover_picture);
             callback(movie, null);
         } catch (Exception e) {
-            callback(null, e);
+            callback(null, new Exception("Failed to load matadata: " ~ e.msg));
         }
 
     }
