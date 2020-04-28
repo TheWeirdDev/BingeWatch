@@ -24,6 +24,8 @@ public {
     import gtk.Image;
     import gtk.Container;
     import gtk.AspectFrame;
+    import gtk.Overlay;
+    import gtk.ProgressBar;
 
     // import gdk.Event;
     // import gobject.ParamSpec;

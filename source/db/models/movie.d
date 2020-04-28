@@ -20,4 +20,8 @@ class Movie {
 	double rating = 0.0;
 	long length = 0;
 	long watched = 0;
+
+	invariant() {
+		assert(this.watched <= this.length, "Movie watch time is incorrect");
+	}
 }

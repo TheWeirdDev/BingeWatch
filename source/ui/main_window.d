@@ -4,6 +4,7 @@ import std.file;
 import std.string, std.regex;
 import std.concurrency, core.thread;
 import core.time, core.memory;
+import std.range;
 
 import glib.Idle;
 
@@ -12,17 +13,27 @@ import ui.gtkall;
 import ui.widgets.welcome;
 import ui.widgets.shelf;
 import ui.widgets.video_player;
+import ui.widgets.movie_page;
 import db.library;
 import db.models;
 import tmdb.tmdb;
 import tmdb.metadata;
 static import config;
 
+private enum StackPage : string {
+    MAIN_PAGE = "main_page",
+    MOVIE_PAGE = "movie_page",
+    SERIES_PAGE = "series_page",
+    PLAYER_PAGE = "player_page",
+    DISCOVER_PAGE = "discover_page"
+}
+
 class MainWindow {
 
 private:
     Builder builder;
     VideoPlayer video_player;
+    MoviePage moviePage;
     ApplicationWindow w;
     Stack mainStack;
     InfoBar infobar;
@@ -34,7 +45,7 @@ private:
     Box videosBox;
     Box contents;
     Library lib;
-    string[] pageStack;
+    StackPage[] pageStack;
     int width, height;
 
     void OpenTVShow(TVShow tv) {
@@ -45,9 +56,10 @@ private:
         writeln("Movie opened: ", m.file_path);
 
         w.getSize(width, height);
-        mainStack.setVisibleChildName("player_page");
-        video_player.setMediaPath(m.file_path);
-        video_player.play();
+        moviePage.setMovie(m);
+        changeView(StackPage.MOVIE_PAGE);
+        // video_player.setMediaPath(m.file_path);
+        // video_player.play();
     }
 
 public:
@@ -79,9 +91,9 @@ public:
         back.setSensitive(false);
         back.addOnClicked((Button) {
             switch (mainStack.getVisibleChildName()) {
-            case "main_page":
+            case StackPage.MAIN_PAGE:
                 break;
-            case "player_page":
+            case StackPage.PLAYER_PAGE:
                 if (video_player.isPlaying()) {
                     video_player.stop();
                 }
@@ -89,8 +101,9 @@ public:
             default:
                 w.setSizeRequest(width, height);
                 w.resize(width, height);
-                mainStack.setVisibleChildName("main_page");
+                mainStack.setVisibleChildName(StackPage.MAIN_PAGE);
             }
+            pageStack.popFront();
             GC.collect();
         });
         headerbtns.packStart(back, true, true, 0);
@@ -100,13 +113,17 @@ public:
         discover.addOnClicked((Button) {});
         header.packEnd(discover);
         header.packStart(headerbtns);
-        mainStack.addNamed(videosBox, "main_page");
+        mainStack.addNamed(videosBox, StackPage.MAIN_PAGE);
 
         auto scr = w.getScreen();
 
         video_player = new VideoPlayer(scr.getWidth(), scr.getHeight());
 
-        mainStack.addNamed(video_player, "player_page");
+        mainStack.addNamed(video_player, StackPage.PLAYER_PAGE);
+
+        moviePage = new MoviePage();
+        mainStack.addNamed(moviePage, StackPage.MOVIE_PAGE);
+
         initMenus();
         message = new Label("");
         infobar.getContentArea().add(message); //infobar.addButton("Close", ResponseType.CLOSE);
@@ -127,7 +144,7 @@ public:
         StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
                 STYLE_PROVIDER_PRIORITY_APPLICATION);
         mainStack.addOnNotify((ParamSpec, ObjectG) {
-            back.setSensitive(mainStack.getVisibleChildName() != "main_page");
+            back.setSensitive(mainStack.getVisibleChildName() != StackPage.MAIN_PAGE);
         }, "visible-child");
         contents = new Box(GtkOrientation.VERTICAL, 5);
         contents.setHexpand(true);
@@ -159,6 +176,8 @@ public:
     ~this() {
 
     }
+
+private:
 
     void initMenus() {
         auto b = new Builder;
@@ -368,4 +387,8 @@ public:
         return file;
     }
 
+    auto changeView(StackPage page) {
+        pageStack ~= page;
+        mainStack.setVisibleChildName(page);
+    }
 }

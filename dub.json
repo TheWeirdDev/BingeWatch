@@ -26,7 +26,7 @@
 	"dependencies": {
 		"gtk-d:gtkd": "~>3.9.0",
 		"hibernated": "~>0.3.6",
-		"requests": "~>1.0.9"
+		"requests": "~>1.1.1"
 	},
 	"description": "A minimal D application.",
 	"libs": [
