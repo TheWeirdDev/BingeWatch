@@ -7,6 +7,9 @@ import std.stdio;
 import core.thread;
 import utils.util;
 import gtk.Application, gtk.ApplicationWindow;
+import gtk.CssProvider;
+import gtk.StyleContext;
+import gdk.Screen;
 
 /**
     The XInitThreads function initializes Xlib support for concurrent threads.
@@ -29,6 +32,22 @@ int main(string[] args) {
         win = new ApplicationWindow(app);
         win.setDefaultSize(1000, 600);
         win.addOnDelete((Event, Widget) { app.quit(); return true; });
+
+        auto styleProvider = new CssProvider();
+        styleProvider.loadFromData(`
+            .title_label {font: 2.2rem raleway;}
+            .sub_label {font-size:1.6rem;}
+            .button_title {font-size:1.3rem;}
+            .button_sub {font-size:1.1rem;}
+            .movie_info {font-size:1.1rem; color: white;}
+            .movie_name {font-size: 2em; color: white; font-weight: bold;  text-shadow: 0px 0px 4px #000000;}
+            .play-btn { padding: 0.5em; font-size: 1.5em;}
+            .desc { font-size:1.3em; font-weight: bold;}
+            .movie_desc { font-size:1.1em; }
+        `);
+        StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
+            STYLE_PROVIDER_PRIORITY_APPLICATION);
+
         auto mw = new MainWindow();
         mw.show(win);
     });

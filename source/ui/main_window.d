@@ -121,7 +121,12 @@ public:
 
         mainStack.addNamed(video_player, StackPage.PLAYER_PAGE);
 
-        moviePage = new MoviePage();
+        moviePage = new MoviePage((m) {
+            changeView(StackPage.PLAYER_PAGE);
+            video_player.setMediaPath(m.file_path);
+            video_player.play();
+        });
+
         mainStack.addNamed(moviePage, StackPage.MOVIE_PAGE);
 
         initMenus();
@@ -134,18 +139,7 @@ public:
             }
         });
         infobar.setShowCloseButton(true);
-        auto styleProvider = new CssProvider();
-        styleProvider.loadFromData(`
-            .title_label {font: 2.2rem raleway;}
-            .sub_label {font-size:1.6rem;}
-            .button_title {font-size:1.3rem;}
-            .button_sub {font-size:1.05rem;}
-            .movie_info {font-size:1.05rem; color: white;}
-            .movie_name {font-size: 2em; color: white; font-weight: bold;}
-            .play-btn { padding: 0.5em; font-size: 1.5em;}
-        `);
-        StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
-                STYLE_PROVIDER_PRIORITY_APPLICATION);
+
         mainStack.addOnNotify((ParamSpec, ObjectG) {
             back.setSensitive(mainStack.getVisibleChildName() != StackPage.MAIN_PAGE);
         }, "visible-child");
@@ -162,8 +156,8 @@ public:
         video_player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0)); // w.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
         //player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
         //player.setEvents(GdkEventMask.EXPOSURE_MASK | GdkEventMask.LEAVE_NOTIFY_MASK | GdkEventMask.BUTTON_PRESS_MASK
-        //         | GdkEventMask.POINTER_MOTION_MASK | GdkEventMask.POINTER_MOTION_HINT_MASK);
-        // player.addOnEvent((Event, Widget w) {
+        //  | GdkEventMask.POINTER_MOTION_MASK | GdkEventMask.POINTER_MOTION_HINT_MASK);
+        // video_player.addOnEvent((Event, Widget w) {
         //     //x, y, w, h = widget.allocation
         //     GtkAllocation alloc;
         //     auto cr = createContext(w.getWindow());

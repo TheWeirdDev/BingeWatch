@@ -18,9 +18,6 @@ public {
     import gdk.Event;
     import gdk.Cairo;
     import gtk.Grid;
-    import gtk.CssProvider;
-    import gtk.StyleContext;
-    import gdk.Screen;
     import gtk.Image;
     import gtk.Container;
     import gtk.AspectFrame;

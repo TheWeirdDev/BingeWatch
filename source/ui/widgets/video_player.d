@@ -41,7 +41,7 @@ public:
         this.maxWidth = maxWidth;
         this.maxHeight = maxHeight;
 
-        immutable char*[] args = [];
+        immutable char*[] args = ["--no-xlib", "--gl=wgl"];
         inst = libvlc_new(cast(int) args.length, args.ptr);
         const char* s = libvlc_get_version();
         writefln("vlc: %s", to!string(s));
@@ -80,8 +80,8 @@ public:
             libvlc_video_get_size(mp, 0, &px, &py);
             writeln(px, " , ", py);
             if (px > 0 && py > 0) {
-                view.setSizeRequest((px < maxWidth) ? px : maxWidth - 1,
-                        (py < maxHeight) ? py : maxHeight - 1);
+                // view.setSizeRequest((px < maxWidth) ? px : maxWidth - 1,
+                //         (py < maxHeight) ? py : maxHeight - 1);
                 set(0.5, 0.5, cast(float) px / cast(float) py, false);
             } else {
                 writeln("Couldn't determine video size");

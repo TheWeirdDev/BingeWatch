@@ -3,6 +3,7 @@ module ui.widgets.movie_page;
 import ui.gtkall;
 import db.models.movie;
 import utils.util;
+import ui.widgets.video_player;
 
 public class MoviePage : Overlay {
 private:
@@ -18,6 +19,7 @@ private:
     Pixbuf bg;
     VBox vb, vb1, vb2;
     HBox hb1, hb2, hb3, hb4, hbx;
+    void delegate(Movie) onClick;
 
     void loadView() {
         vb = new VBox(false, 0);
@@ -57,6 +59,7 @@ private:
         playBtn.setImage(new Image("media-playback-start", GtkIconSize.LARGE_TOOLBAR));
         playBtn.setAlwaysShowImage(true);
         playBtn.getStyleContext().addClass("play-btn");
+        playBtn.addOnClicked((btn) { onClick(currentMovie); });
         // playBtn.setSizeRequest(200, 200);
 
         nameLbl = new Label("Name");
@@ -89,11 +92,15 @@ private:
         //     c.fill();
         //     return false;
         // });
-        auto lb5 = new Label("Desc:");
+        auto lb5 = new Label("Description:");
+        lb5.setXalign(0);
+        lb5.setPadding(10, 0);
+        lb5.getStyleContext().addClass("desc");
         descLbl = new Label("desc...");
         descLbl.setMargin(15);
         descLbl.setJustify(GtkJustification.FILL);
         descLbl.setLineWrap(true);
+        descLbl.getStyleContext().addClass("movie_desc");
         vb2.packStart(lb5, false, true, 0);
         vb2.packStart(descLbl, false, true, 0);
         vb.packStart(vb2, true, true, 0);
@@ -117,8 +124,9 @@ private:
     }
 
 public:
-    this() {
+    this(void delegate(Movie) c) {
         super();
+        onClick = c;
         loadView();
     }
 
@@ -131,7 +139,7 @@ public:
 
         currentMovie = m;
         bg = new Pixbuf(getImagesDirName() ~ currentMovie.cover_picture);
-        bg = pixbuf_blur(bg, 5);
+        bg = pixbuf_blur(bg, 7);
         // bg.saturateAndPixelate(bg, 0.7, false);
         reloadView();
     }
