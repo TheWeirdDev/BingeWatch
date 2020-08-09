@@ -21,12 +21,12 @@ public:
         reload();
     }
 
-    ref Movie[] getMovies() {
+    Movie[] getMovies() {
         reload();
         return movies;
     }
 
-    ref TVShow[] getShows() {
+    TVShow[] getShows() {
         reload();
         return shows;
     }
@@ -61,14 +61,6 @@ public:
         tvs.dir_path = path;
         add(tvs);
         return tvs;
-    }
-
-    Movie addMovie(string name, string file) {
-        Movie m = new Movie;
-        m.name = name;
-        m.file_path = file;
-        add(m);
-        return m;
     }
 
 }

@@ -28,7 +28,7 @@
 		"hibernated": "~>0.3.6",
 		"requests": "~>1.1.1"
 	},
-	"description": "A minimal D application.",
+	"description": "A place to watch, organize and discover movies and tv shows",
 	"libs": [
 		"vlc",
 		"gtk+-3.0",

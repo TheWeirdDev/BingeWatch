@@ -105,26 +105,24 @@ public:
 
 private class MovieMetadataDownloader : Thread {
 private:
-    Movie m;
+    string name;
     MovieCallback callback;
     Database ds;
 
 public:
 
-    this(Movie m, MovieCallback callback) {
+    this(string n, MovieCallback callback) {
         super(&run);
         this.ds = Database.getInstance();
-        this.m = m;
+        name = n;
         this.callback = callback;
     }
 
     void run() {
         try {
-            auto tmdbid = TMDB.searchMovie(m.name);
+            auto tmdbid = TMDB.searchMovie(name);
             auto movie = TMDB.getMovie(tmdbid);
 
-            movie.id = m.id;
-            movie.file_path = m.file_path;
             if (movie.picture != "")
                 download(getImageUrl(movie.picture), getImagesDirName() ~ movie.picture);
             if (movie.cover_picture != "")
@@ -142,7 +140,7 @@ void loadMetadataFor(TVShow tvs, TVShowCallback callback) {
     tdl.start();
 }
 
-void loadMetadataFor(Movie m, MovieCallback callback) {
-    auto mdl = new MovieMetadataDownloader(m, callback);
+void loadMetadataForMovie(string name, MovieCallback callback) {
+    auto mdl = new MovieMetadataDownloader(name, callback);
     mdl.start();
 }

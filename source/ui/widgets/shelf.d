@@ -29,13 +29,13 @@ public:
         setValign(GtkAlign.START);
         setRowSpacing(5);
         setMargin(this, 10);
-        // for (int i = 0; i < 100; i++)
-        foreach (ref tv; db.getShows()) {
+
+        foreach (tv; db.getShows()) {
             auto btn = new ShelfItemTVShow(tv, tvc);
             btn.setSizeRequest(Width, Height);
             add(btn);
         }
-        foreach (ref m; db.getMovies()) {
+        foreach (m; db.getMovies()) {
             auto btn = new ShelfItemMovie(m, mc);
             btn.setSizeRequest(Width, Height);
             add(btn);
@@ -52,7 +52,7 @@ protected:
     T data;
     const C callback;
 
-    this(ref T t, ref C c) {
+    this(T t, C c) {
         super();
         data = t;
         callback = c;
@@ -70,8 +70,10 @@ protected:
         box.addOnDraw((Scoped!Context c, Widget w) {
 
             if (!pic) {
-                pic = new Pixbuf(getImagesDirName() ~ data.picture,
-                    w.getAllocatedWidth(), w.getAllocatedHeight(), false);
+                if (data.picture !is null) {
+                    pic = new Pixbuf(getImagesDirName() ~ data.picture,
+                        w.getAllocatedWidth(), w.getAllocatedHeight(), false);
+                }
             }
 
             c.setSourcePixbuf(pic, 0, 0);
@@ -119,7 +121,7 @@ protected:
 
 private class ShelfItemTVShow : BaseShelfItem!(TVShow, TVShowCallback) {
 
-    this(ref TVShow tvs, ref TVShowCallback tvc) {
+    this(TVShow tvs, TVShowCallback tvc) {
         super(tvs, tvc);
     }
 
@@ -131,7 +133,7 @@ private class ShelfItemTVShow : BaseShelfItem!(TVShow, TVShowCallback) {
 }
 
 private class ShelfItemMovie : BaseShelfItem!(Movie, MovieCallback) {
-    this(ref Movie m, ref MovieCallback mc) {
+    this(Movie m, MovieCallback mc) {
         super(m, mc);
     }
 

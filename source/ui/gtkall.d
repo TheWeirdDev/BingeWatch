@@ -47,8 +47,7 @@ public {
 }
 
 void setMargin(Widget t, int margin) {
-    t.setMarginLeft(margin);
-    t.setMarginRight(margin);
-    t.setMarginTop(margin);
-    t.setMarginBottom(margin);
+    static foreach (side; ["Left", "Right", "Top", "Bottom"]) {
+        mixin("t.setMargin" ~ side ~ "(margin);");
+    }
 }

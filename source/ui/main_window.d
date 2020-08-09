@@ -99,8 +99,8 @@ public:
                 }
                 goto default;
             default:
-                w.setSizeRequest(width, height);
-                w.resize(width, height);
+                //w.setSizeRequest(width, height);
+                //w.resize(width, height);
                 mainStack.setVisibleChildName(StackPage.MAIN_PAGE);
             }
             pageStack.popFront();
@@ -140,6 +140,9 @@ public:
             .sub_label {font-size:1.6rem;}
             .button_title {font-size:1.3rem;}
             .button_sub {font-size:1.05rem;}
+            .movie_info {font-size:1.05rem; color: white;}
+            .movie_name {font-size: 2em; color: white; font-weight: bold;}
+            .play-btn { padding: 0.5em; font-size: 1.5em;}
         `);
         StyleContext.addProviderForScreen(Screen.getDefault(), styleProvider,
                 STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -254,7 +257,9 @@ private:
             return;
         }
         //TODO: Check if this show already exists
-        auto tvs = lib.addTVShow(name, dir);
+        TVShow tvs = new TVShow;
+        tvs.name = name;
+        tvs.dir_path = dir;
         showMessage("Downloading metadata. This takes a while, please wait.", false, false);
 
         loadMetadataFor(tvs, (TVShow tv, Exception e) {
@@ -271,22 +276,28 @@ private:
     }
 
     void importMovie() {
+        import std.algorithm : filter;
+
         string name;
-        auto file = selectMovieFile(name);
+        const file = selectMovieFile(name);
         if (file.empty || name.empty) {
             return;
         }
         //TODO: Check if this show already exists
-        auto mv = lib.addMovie(name, file);
+        if (lib.getMovies().filter!(a => a.name == name || a.file_path == file)().array.length > 0) {
+            showError("This movie is already added to the library", true);
+            return;
+        }
         showMessage("Downloading metadata. This takes a while, please wait.", false, false);
 
-        loadMetadataFor(mv, (Movie m, Exception e) {
+        loadMetadataForMovie(name, (Movie m, Exception e) {
             if (e !is null) {
                 showError("Error: " ~ e.msg);
                 return;
             }
-
-            lib.update(m);
+            m.name = name;
+            m.file_path = file;
+            lib.add(m);
             reloadLibary();
             showMessage("Done");
         });

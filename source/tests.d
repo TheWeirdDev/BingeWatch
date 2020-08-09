@@ -93,7 +93,7 @@ unittest {
     // assert(u11.genres == "[\"Comedy\", \"Sitcom\"]");
     // assert(to!(string[])(u11.genres) == ["Comedy", "Sitcom"]);
     //remove reference
-    // foreach(ref ep; u11.episodes){
+    // foreach(ep; u11.episodes){
     // 	sess.remove(ep);
     // }
     // sess.update(u11);

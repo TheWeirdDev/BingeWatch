@@ -60,17 +60,17 @@ public:
         sFactory.close();
     }
 
-    void refresh(ref TVShow tvs) {
+    void refresh(TVShow tvs) {
         sess.refresh(tvs);
     }
 
-    void refresh(ref Movie m) {
+    void refresh(Movie m) {
         sess.refresh(m);
     }
 
     Movie[] getMovies(string order = "name") {
         auto res = sess.createQuery("FROM Movie ORDER BY " ~ order).list!Movie();
-        foreach (ref m; res) {
+        foreach (m; res) {
             refresh(m);
         }
         return res;
@@ -78,7 +78,7 @@ public:
 
     TVShow[] getShows(string order = "name") {
         auto res = sess.createQuery("FROM TVShow ORDER BY " ~ order).list!TVShow();
-        foreach (ref tv; res) {
+        foreach (tv; res) {
             refresh(tv);
         }
         return res;
