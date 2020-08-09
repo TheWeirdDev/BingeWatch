@@ -53,8 +53,16 @@ static:
                 format!"query=%s&page=1&include_adult=true&"(name.encode));
         const content = getRequest(url);
         const resp = parseJSON(content);
-        if (resp["total_results"].integer == 0) {
+        const count = resp["total_results"].integer;
+        if (count == 0) {
             throw new Exception("No metadata found for '" ~ name ~ "'");
+        } else if (count > 1) {
+            import std.array : array;
+
+            auto x = resp["results"].array.filter!(a => a["title"].str == name)();
+            if (x.array.length > 0) {
+                return x.array[0]["id"].integer;
+            }
         }
         return cast(ulong) resp["results"].array[0]["id"].integer;
     }
