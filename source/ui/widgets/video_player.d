@@ -7,8 +7,9 @@ import std.conv;
 import ui.gtkall;
 import vlc.vlc;
 
-class VideoPlayer : AspectFrame {
+class VideoPlayer : HBox {
 private:
+    VBox mainBox;
     DrawingArea view;
     libvlc_instance_t* inst = null;
     libvlc_media_player_t* mp = null;
@@ -37,20 +38,38 @@ private:
 
 public:
     this(uint maxWidth, uint maxHeight) {
-        super("", 0.5, 0.5, 16.0 / 9.0, false);
+        super(false, 0);
+        //super("", 0.5, 0.5, 16.0 / 9.0, false);
         this.maxWidth = maxWidth;
         this.maxHeight = maxHeight;
 
-        immutable char*[] args = ["--no-xlib", "--gl=wgl"];
+        immutable char*[] args = ["--no-xlib"];
         inst = libvlc_new(cast(int) args.length, args.ptr);
         const char* s = libvlc_get_version();
         writefln("vlc: %s", to!string(s));
         stdout.flush();
 
+        mainBox = new VBox(false, 0);
         view = new DrawingArea;
-        add(view);
-        setShadowType(GtkShadowType.NONE);
-        setLabelWidget(null);
+
+        view.addOnEvent((Event e, Widget w) {
+            if (e.type == EventType.CONFIGURE) {
+                GtkAllocation alloc;
+                auto cr = createContext(w.getWindow());
+                w.getAllocation(alloc);
+                cr.rectangle(0, 0, alloc.width, alloc.height);
+                cr.setSourceRgb(0, 0, 0);
+                cr.fill();
+            }
+            return false;
+        });
+
+        mainBox.packStart(view, true, true, 0);
+        mainBox.packStart(new Button("PlaceHolder"), false, false, 0);
+        add(mainBox);
+
+        // setShadowType(GtkShadowType.NONE);
+        // setLabelWidget(null);
     }
 
     void setMediaPath(string s) {
@@ -81,8 +100,8 @@ public:
             writeln(px, " , ", py);
             if (px > 0 && py > 0) {
                 // view.setSizeRequest((px < maxWidth) ? px : maxWidth - 1,
-                //         (py < maxHeight) ? py : maxHeight - 1);
-                set(0.5, 0.5, cast(float) px / cast(float) py, false);
+                //            (py < maxHeight) ? py : maxHeight - 1);
+                //set(0.5, 0.5, cast(float) px / cast(float) py, false);
             } else {
                 writeln("Couldn't determine video size");
             }

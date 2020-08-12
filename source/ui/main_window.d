@@ -157,17 +157,6 @@ public:
         //player.modifyBg(GtkStateType.NORMAL, new Color(0, 0, 0));
         //player.setEvents(GdkEventMask.EXPOSURE_MASK | GdkEventMask.LEAVE_NOTIFY_MASK | GdkEventMask.BUTTON_PRESS_MASK
         //  | GdkEventMask.POINTER_MOTION_MASK | GdkEventMask.POINTER_MOTION_HINT_MASK);
-        // video_player.addOnEvent((Event, Widget w) {
-        //     //x, y, w, h = widget.allocation
-        //     GtkAllocation alloc;
-        //     auto cr = createContext(w.getWindow());
-        //     w.getAllocation(alloc);
-        //     cr.rectangle(0, 0, alloc.width, alloc.height);
-        //     cr.setSourceRgb(0, 0, 0);
-        //     cr.fill();
-        //     return true;
-        // });
-
     }
 
     ~this() {
@@ -245,7 +234,7 @@ private:
     void importTVShow() {
         //TODO: Check if download is in progress
         auto name = "";
-        auto dir = selectTVShowDir(name);
+        const dir = selectTVShowDir(name);
 
         if (dir.empty || name.empty) {
             return;
@@ -357,11 +346,13 @@ private:
         box2.add(ent);
 
         box.add(box2);
+        box.add(new Label(
+                "Choosing an accurate name is required for downloading the correct metadata"));
 
         d.getContentArea().add(box);
         d.setDefaultSize(500, -1);
         d.showAll();
-        auto res = d.run();
+        const res = d.run();
         scope (exit)
             d.destroy();
         if (res != ResponseType.ACCEPT) {

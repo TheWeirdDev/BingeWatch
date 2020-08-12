@@ -1,3 +1,7 @@
+/*
+    Credit: https://github.com/geoffyoungs/pixbufutils/blob/master/ext/pixbufutils/blur.h
+*/
+
 module ui.pixbuf_blur;
 import ui.gtkall;
 import std.array;
