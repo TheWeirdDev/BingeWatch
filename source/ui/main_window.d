@@ -12,8 +12,8 @@ import vlc.vlc_player;
 import ui.gtkall;
 import ui.widgets.welcome;
 import ui.widgets.shelf;
-import ui.widgets.video_player;
 import ui.widgets.movie_page;
+import ui.widgets.player.video_player;
 import db.library;
 import db.models;
 import tmdb.tmdb;
@@ -116,13 +116,20 @@ public:
         mainStack.addNamed(videosBox, StackPage.MAIN_PAGE);
 
         auto scr = w.getScreen();
-
         video_player = new VideoPlayer(scr.getWidth(), scr.getHeight());
+        video_player.setSDLG((wa, h) {
+            //win.setSizeRequest(wa, h);
+            w.resize(wa, h);
 
+            import std.stdio;
+
+            writeln("Resized: ", wa, h);
+        });
         mainStack.addNamed(video_player, StackPage.PLAYER_PAGE);
 
         moviePage = new MoviePage((m) {
             changeView(StackPage.PLAYER_PAGE);
+
             video_player.setMediaPath(m.file_path);
             video_player.play();
         });

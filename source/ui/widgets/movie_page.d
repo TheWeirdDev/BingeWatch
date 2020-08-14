@@ -3,7 +3,7 @@ module ui.widgets.movie_page;
 import ui.gtkall;
 import db.models.movie;
 import utils.util;
-import ui.widgets.video_player;
+import ui.widgets.player.video_player;
 
 public class MoviePage : Overlay {
 private:

@@ -24,7 +24,8 @@ public:
         apiKey = config.API_KEY;
         if (apiKey != "")
             return;
-        debug apiKey = environment.get("API_KEY", "");
+        // debug apiKey = environment.get("API_KEY", "");
+        debug apiKey = import(".env");
         enforce(apiKey != "", "No api key specified");
     }
 

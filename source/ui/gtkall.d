@@ -3,6 +3,7 @@ module ui.gtkall;
 public {
     import gtk.Stack;
     import gtk.Label;
+    import gtk.Scale, gtk.Adjustment, gtk.Range;
     import gtk.Button, gtk.ButtonBox, gtk.ToggleButton, gtk.MenuButton;
     import gtk.ApplicationWindow;
     import gtk.Main;

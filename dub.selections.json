@@ -8,7 +8,7 @@
 		"derelict-pq": "2.2.0",
 		"derelict-util": "2.0.6",
 		"diet-ng": "1.7.2",
-		"eventcore": "0.8.50",
+		"eventcore": "0.9.7",
 		"gtk-d": "3.9.0",
 		"hibernated": "0.3.6",
 		"libasync": "0.8.6",
@@ -17,11 +17,11 @@
 		"mir-linux-kernel": "1.0.1",
 		"mysql-native": "3.0.0",
 		"openssl": "1.1.6+1.0.1g",
-		"requests": "1.1.2",
+		"requests": "1.1.6",
 		"stdx-allocator": "2.77.5",
-		"taggedalgebraic": "0.11.15",
+		"taggedalgebraic": "0.11.16",
 		"unit-threaded": "0.7.55",
-		"vibe-core": "1.9.1",
-		"vibe-d": "0.8.6"
+		"vibe-core": "1.9.3",
+		"vibe-d": "0.9.0"
 	}
 }

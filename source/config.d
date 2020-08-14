@@ -2,7 +2,7 @@ module config;
 
 static {
     // REPLACE WITH YOUR OWN API KEY
-    immutable API_KEY = "";
+    immutable API_KEY = "TMDB_API_KEY";
 }
 
 static immutable string[] supportedMimeTypes = [

@@ -7,7 +7,8 @@
 			"subConfigurations": {
 				"hibernated": "SQLite"
 			},
-			"targetType": "executable"
+			"targetType": "executable",
+			"dflags": ["-J=."]
 		},
 		{
 			"buildOptions": [
